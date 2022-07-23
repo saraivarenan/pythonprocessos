@@ -8,6 +8,7 @@ from os import path
 from glob import glob
 from zipfile import ZipFile
 class downloadfile:
+    # 08.369.850/0001-73 com mensagem
     imagem = r"images\inserirCnpj.png";
     alerta = r"images\alertarobo.png";
     check = r"images\checkbox.png";
@@ -26,7 +27,7 @@ class downloadfile:
     year = str(date.today().year)
     month = str(date.today().month)
 
-    def interacaoDownload(cnpji,imagem,alerta,check,btnGuia,btnAlterarPerfil,fechardown,df,listExecLog,logexecucao,indice):
+    def interacaoDownload(cnpji,imagem,alerta,check,btnGuia,btnAlterarPerfil,fechardown,df,listExecLog,logexecucao,indice, btnRecarregar):
         try:
             indiceEntrada = len(df)
             while  indice < indiceEntrada:
@@ -44,13 +45,12 @@ class downloadfile:
                 indice += 1
             return indice
         except:
+            print("Errou")
+            downloadfile.clickImage(btnRecarregar,cnpji,logexecucao)
             listExecLog.append('{}{}{}\n'.format(cnpji, ",", "NOK"))
             with open(logexecucao, "w") as logexec:
                 logexec.writelines(listExecLog)
-            pyautogui.hotkey('ctrl', 'r')
             return indice
-
-
     def criarPasta(self):
         dir = os.path.join("C:\\","temp","python")
         if not os.path.exists(dir):
@@ -73,24 +73,29 @@ class downloadfile:
             src = path+f
             dst = moveto+f
             shutil.move(src,dst)
+    def extrairArquivo(cnpj, dir):
         print("extraindo arquivo zip para .pdf. Cliente: ",cnpj)
         path1 = "".join(map(str, downloadfile.find_ext(dir, "zip")))
         with ZipFile(path1, 'r') as zipObj:
             # Extract all the contents of zip file in different directory
             zipObj.extractall(dir)
             print('Arquivo extraido para pdf. Cliente: ', cnpj)
+
     def clickImage(imagem, cnpji, logexecucao):
         listExecLog = []
-
+        btnRecarregar = r"images\btnRecarregar.png";
         if (pyautogui.locateOnScreen(imagem, grayscale=True) != None):
             imageClick = pyautogui.locateOnScreen(imagem, grayscale=True);
             local = pyautogui.center(imageClick);
             pyautogui.click(local)
             time.sleep(3)
         else :
-            listExecLog.append('{}{}{}\n'.format(cnpji, ",", "NOK"))
-            with open(logexecucao, "w") as logexec:
-                logexec.writelines(listExecLog)
+            print("Errou")
+            # downloadfile.clickImage(btnRecarregar,cnpji,logexecucao)
+            # listExecLog.append('{}{}{}\n'.format(cnpji, ",", "NOK"))
+            # with open(logexecucao, "w") as logexec:
+            #     logexec.writelines(listExecLog)
+            # downloadfile.clickImage(imagem,cnpji,logexecucao)
 
     def AlterarCnpjDowload(cnpj,imagem, alerta, check, btnGuia, alterarPerfil,fechardown, logexecucao):
         pyautogui.click(1100, 210);
@@ -103,6 +108,15 @@ class downloadfile:
         pyautogui.press("tab");
         time.sleep(2)
         pyautogui.press("enter");
+# trabalho em andamento
+#         try:
+#             mensagemNaolida = r"images\inserirCnpj.png";
+#             if pyautogui.locateOnScreen(alerta, grayscale=True) != None:
+#                 pyautogui.rightClick(780, 382);
+#                 time.sleep(4)
+#         except:
+#             print("erro")
+
         for i in range(0, 9):
             if pyautogui.locateOnScreen(alerta, grayscale=True) != None:
                 pyautogui.rightClick(780, 382);
@@ -113,14 +127,32 @@ class downloadfile:
         time.sleep(5)
         #pyautogui.press('pagedown')
         time.sleep(2);
-        downloadfile.clickImage(check,cnpj, logexecucao)
-        time.sleep(3);
-        downloadfile.clickImage(btnGuia, cnpj, logexecucao);
-        time.sleep(4);
-        pyautogui.press('enter');
-        time.sleep(1)
-        downloadfile.clickImage(fechardown, cnpj, logexecucao)
-        downloadfile.moveFile(cnpj)
+        downloadfile.validarSemMovimenta(check,btnGuia,fechardown,cnpj,logexecucao)
+#
+    def validarSemMovimenta(check,btnGuia,fechardown, cnpj, logexecucao):
+        year = str(date.today().year)
+        month = str(date.today().month - 1)
+        pastadownload = str(month + "_" + year)
+        dir = os.path.join("C:\\Users\\lucas.gomes\\Documents", pastadownload, cnpj)
+        print(dir)
+        semMovimenta = r"images/clickSemMovimento.png"
+        if pyautogui.locateOnScreen(check, grayscale=True) != None:
+            downloadfile.clickImage(check, cnpj, logexecucao)
+            time.sleep(10);
+            downloadfile.clickImage(btnGuia, cnpj, logexecucao);
+            time.sleep(4);
+            pyautogui.press('enter');
+            time.sleep(1)
+            downloadfile.clickImage(fechardown, cnpj, logexecucao)
+            downloadfile.moveFile(cnpj)
+            downloadfile.extrairArquivo(cnpj, dir)
+        else:
+            downloadfile.clickImage(semMovimenta, cnpj, logexecucao)
+            time.sleep(2)
+            pyautogui.click(1100, 500);
+            downloadfile.clickImage(fechardown, cnpj, logexecucao)
+            downloadfile.moveFile(cnpj)
+
     def find_ext(dr, ext):
         return glob(path.join(dr, "*.{}".format(ext)))
 
@@ -133,6 +165,7 @@ class downloadfile:
         last = parsed.split()
         idvalor = last.index('Valor:')
         return last[idvalor + 1]
+
 def bot():
     imagem = r"images\inserirCnpj.png";
     alerta = r"images\alertarobo.png";
@@ -147,18 +180,19 @@ def bot():
     fecharDownload = r"images\fecharDownload.png";
     fecharNavagador = r"images\fecharNavegador.png";
     fechardown = r"images\imagemFechar.png";
+    btnRecarregar = r"images\btnRecarregar.png";
     file = r"dadosUm.csv";
     df = pd.read_csv(file)
     year = str(date.today().year)
-    month = str(date.today().month)
+    month = str(date.today().month-1)
     listExecLog = []
     logexecucao = "C:/Users/lucas.gomes/Documents/logExecucao_" + month + "_" + year + ".txt"
     try:
        # fileTxt = open( logexecucao,"w+")
         cnpj = df.get("cpf")[0]
         cnpji = cnpj.replace(".","")
-        cnpji = cnpji.replace("/","")
-        cnpji = cnpji.replace("-","")
+        cnpjBarra = cnpji.replace("/","")
+        cnpjTraco = cnpjBarra.replace("-","")
         # realizado com a o tamanho Size(width=1366, height=768)
         pyautogui.press('winleft')
         time.sleep(2)
@@ -180,7 +214,8 @@ def bot():
         indice = 0
         indiceEntrada =len(df)
         while indice <= indiceEntrada:
-            indiceinteracao = 1+ downloadfile.interacaoDownload(cnpji,imagem,alerta,check,btnGuia,btnAlterarPerfil,fechardown,df,listExecLog,logexecucao, indice)
+            indiceReturn = downloadfile.interacaoDownload(cnpjTraco,imagem,alerta,check,btnGuia,btnAlterarPerfil,fechardown,df,listExecLog,logexecucao, indice,btnRecarregar)
+            indiceinteracao = 1+ indiceReturn
             indice =indiceinteracao
     except Exception as erro:
         print(" Ocorreu um erro", erro)
