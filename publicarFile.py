@@ -80,10 +80,10 @@ try:
         cnpji = cnpji.replace("-", "")
         pathfolder = "C:\\Users\\lucas.gomes\\Documents\\"+filepathpdf+"\\"+cnpji
         pathfile = "".join(map(str, downloadfile.find_ext(pathfolder, "pdf")))
-        valor = downloadfile.getValorPdf(pathfile)
-        time.sleep(3)
+        time.sleep(2)
+
         selectEmpresa = WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.ID, "select2-empresaId-container")))
+            EC.element_to_be_clickable((By.ID, "select2-empresaId-container")))
         selectEmpresa.click();
         time.sleep(2)
         driver.switch_to.active_element.send_keys(cnpji)
@@ -91,19 +91,26 @@ try:
         driver.switch_to.active_element.send_keys(Keys.ENTER)
         time.sleep(2)
 
-#pesquisar relatorio
-        selectReport = driver.find_element(By.ID,value="select2-relatorioId-container")
+        # pesquisar relatorio
+        selectReport = driver.find_element(By.ID, value="select2-relatorioId-container")
         selectReport.click()
         time.sleep(2)
         driver.switch_to.active_element.send_keys("DWEB")
         time.sleep(4)
         driver.switch_to.active_element.send_keys(Keys.ENTER)
-#Preencher datas e valor
+        # Preencher datas e valor
         driver.find_element(By.ID, value="dataReferencia").send_keys(valorRefenrencia)
-        time.sleep(2)
-        driver.find_element(By.ID, value="dataVencimento").send_keys(dataVenc)
-        time.sleep(2)
-        driver.find_element(By.ID, value="valor").send_keys(valor)
+
+        if ("Guia" in pathfile):
+            print("É Guia de pagamento - Cobrar ")
+            time.sleep(3)
+
+            time.sleep(2)
+            driver.find_element(By.ID, value="dataVencimento").send_keys(dataVenc)
+            time.sleep(2)
+            valor = downloadfile.getValorPdf(pathfile)
+            driver.find_element(By.ID, value="valor").send_keys(valor)
+
         time.sleep(2)
 
         body = driver.find_element(By.CSS_SELECTOR,"body")
