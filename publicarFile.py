@@ -26,7 +26,7 @@ try:
     chromeOptions.add_argument('--ash-force-desktop')
     chromeOptions.add_argument('--ignore-ssl-errors')
     chromeOptions.add_argument('--window-size=1366x768')
-    #chromeOptions.add_argument('headless')
+  #  chromeOptions.add_argument('headless')
     year = str(date.today().year)
     mesAtual = str(date.today().month-1)
 
@@ -86,7 +86,7 @@ try:
             EC.element_to_be_clickable((By.ID, "select2-empresaId-container")))
         selectEmpresa.click();
         time.sleep(2)
-        driver.switch_to.active_element.send_keys(cnpji)
+        driver.switch_to.active_element.send_keys("teste")
         time.sleep(4)
         driver.switch_to.active_element.send_keys(Keys.ENTER)
         time.sleep(2)
@@ -104,26 +104,23 @@ try:
         if ("Guia" in pathfile):
             print("É Guia de pagamento - Cobrar ")
             time.sleep(3)
-
-            time.sleep(2)
             driver.find_element(By.ID, value="dataVencimento").send_keys(dataVenc)
             time.sleep(2)
             valor = downloadfile.getValorPdf(pathfile)
             driver.find_element(By.ID, value="valor").send_keys(valor)
+            time.sleep(2)
 
-        time.sleep(2)
+            body = driver.find_element(By.CSS_SELECTOR, "body")
+            body.send_keys(Keys.PAGE_DOWN)
 
-        body = driver.find_element(By.CSS_SELECTOR,"body")
-        body.send_keys(Keys.PAGE_DOWN)
+            # anexar documento
+            time.sleep(3)
 
-    #anexar documento
-        time.sleep(3)
+            upload = driver.find_element(By.ID, value="arquivo")
+            # upload.click()
+            upload.send_keys(os.path.abspath(pathfile))
 
-        upload = driver.find_element(By.ID,value="arquivo")
-        #upload.click()
-        upload.send_keys(os.path.abspath(pathfile))
-
-        time.sleep(3)
+            time.sleep(3)
 
         driver.find_element(By.XPATH,value="//button[contains(.,'Publicar')]").click()
         time.sleep(7)
@@ -136,14 +133,14 @@ try:
         assert mensagemSucesso.__eq__(mensagemValidar)
         time.sleep(5)
 
-        print("Arquivo publicado")
+        print("Arquivo publicado",cnpji)
         listExecLog.append('{}{}{}\n'.format(cnpji, ",", "OK"))
         with open(logexecucao, "w") as logexec:
             logexec.writelines(listExecLog)
         driver.refresh()
 
 except Exception as erro:
-    print(erro)
+    print( cnpji, "erro")
     listExecLog.append('{}{}{}\n'.format(cnpji, ",", "NOK"))
     with open(logexecucao, "w") as logexec:
         logexec.writelines(listExecLog)

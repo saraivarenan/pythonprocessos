@@ -97,6 +97,14 @@ class downloadfile:
         lista = text.split("\n")
         return lista[40]
 
+    def getValorPDF(file,valor, index):
+        text = extract_text(file)
+        parsed = ''.join(text)
+        last = parsed.split()
+        idvalor = last.index(valor)
+        #idvalor = last.index('até')
+        return last[idvalor + index]
+
     def retornaVencimento(file):
         with fitz.open(file) as doc:
             text = ""

@@ -61,7 +61,7 @@ try:
 
 #habilitar search pesquisa
 
-    monthreferencia = str((date.today().month)-1)
+    monthreferencia = str(date.today().month)
     mesAtual = str((date.today().month)-1)
     mesvencimento = str((date.today().month))
 
@@ -74,19 +74,24 @@ try:
     else:
         dataVenc ="20"+mesAtual+year
     listExecLog.append('{}{}{}\n'.format("CNPJ", ",", "STATUS"))
-    path = r"C:\Users\lucas.gomes\Documents\execuções_1006\6_2022\files"
+    path = r"C:\Users\lucas.gomes\Documents\arquivos_TFEA\Guias_TFE_2022"
     files = downloadfile.find_ext(path, "pdf")
     #files.sort()
     for f in files:
         nomepasta =str(f)
         valorCnpjpdf = downloadfile.retornarCnpj(nomepasta)
+        cnpj = valorCnpjpdf
+        cnpji = cnpj.replace(".", "")
+        cnpji = cnpji.replace("/", "")
+        cnpji = cnpji.replace("-", "")
+
         valorVencimento = downloadfile.retornaVencimento(nomepasta)
         valorpdf = downloadfile.retonarValor(nomepasta)
         selectEmpresa = WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.ID, "select2-empresaId-container")))
         selectEmpresa.click();
         time.sleep(2)
-        driver.switch_to.active_element.send_keys("teste")
+        driver.switch_to.active_element.send_keys(cnpji)
         time.sleep(4)
         driver.switch_to.active_element.send_keys(Keys.ENTER)
         time.sleep(2)

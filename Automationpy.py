@@ -108,6 +108,15 @@ class downloadfile:
         pyautogui.press("tab");
         time.sleep(2)
         pyautogui.press("enter");
+# trabalho em andamento
+#         try:
+#             mensagemNaolida = r"images\inserirCnpj.png";
+#             if pyautogui.locateOnScreen(alerta, grayscale=True) != None:
+#                 pyautogui.rightClick(780, 382);
+#                 time.sleep(4)
+#         except:
+#             print("erro")
+
         for i in range(0, 9):
             if pyautogui.locateOnScreen(alerta, grayscale=True) != None:
                 pyautogui.rightClick(780, 382);
