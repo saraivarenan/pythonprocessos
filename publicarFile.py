@@ -9,6 +9,7 @@ import time
 from config import caminhoDriver, urlSciweb, usuario, senha
 from functions import downloadfile
 from datetime import date
+from os import listdir
 
 try:
     file = r"dadosUm.csv";
@@ -26,7 +27,7 @@ try:
     chromeOptions.add_argument('--ash-force-desktop')
     chromeOptions.add_argument('--ignore-ssl-errors')
     chromeOptions.add_argument('--window-size=1366x768')
-  #  chromeOptions.add_argument('headless')
+    #chromeOptions.add_argument('headless')
     year = str(date.today().year)
     mesAtual = str(date.today().month-1)
 
@@ -65,83 +66,95 @@ try:
     monthNumber = (date.today().month)
     filepathpdf = mesAtual+"_"+year
     dataVenc = "20"+mesAtual+year
-    print(dataVenc)
     if(monthNumber <10):
         valorRefenrencia = "0"+monthreferencia+year
         dataVenc = "20"+"0"+mesvencimento+ year
     else:
         dataVenc ="20"+mesAtual+year
-    listExecLog.append('{}{}{}\n'.format("CNPJ", ",", "STATUS"))
+    listExecLog.append('{}{}{}{}{}\n'.format("CNPJ", ",", "STATUS",",","ARQUIVO"))
+
     for indice, data in df.iterrows():
-
-        cnpj = df.get("cpf")[indice]
-        cnpji = cnpj.replace(".", "")
-        cnpji = cnpji.replace("/", "")
-        cnpji = cnpji.replace("-", "")
+        cnpji= downloadfile.tirarMascaraCnpj( df.get("cpf")[indice])
         pathfolder = "C:\\Users\\lucas.gomes\\Documents\\"+filepathpdf+"\\"+cnpji
-        pathfile = "".join(map(str, downloadfile.find_ext(pathfolder, "pdf")))
-        time.sleep(2)
+        lista_arqs = [arq for arq in listdir(pathfolder)]
+        loop = 0
+        while loop < len(lista_arqs):
+            fileAtual = str(lista_arqs[loop])
+            arquivoAnexo = pathfolder + "\\" + fileAtual
+            if "Guia" in fileAtual and "pdf" in fileAtual:
+                #pathfile = "".join(map(str, downloadfile.find_ext(pathfolder, "pdf")))
+                time.sleep(2)
+                selectEmpresa = WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable((By.ID, "select2-empresaId-container")))
+                selectEmpresa.click();
+                time.sleep(2)
+                driver.switch_to.active_element.send_keys("teste")
+                time.sleep(4)
+                driver.switch_to.active_element.send_keys(Keys.ENTER)
+                time.sleep(2)
 
-        selectEmpresa = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.ID, "select2-empresaId-container")))
-        selectEmpresa.click();
-        time.sleep(2)
-        driver.switch_to.active_element.send_keys("teste")
-        time.sleep(4)
-        driver.switch_to.active_element.send_keys(Keys.ENTER)
-        time.sleep(2)
-
-        # pesquisar relatorio
-        selectReport = driver.find_element(By.ID, value="select2-relatorioId-container")
-        selectReport.click()
-        time.sleep(2)
-        driver.switch_to.active_element.send_keys("DWEB")
-        time.sleep(4)
-        driver.switch_to.active_element.send_keys(Keys.ENTER)
+                # pesquisar relatorio
+                selectReport = driver.find_element(By.ID, value="select2-relatorioId-container")
+                selectReport.click()
+                time.sleep(2)
+                driver.switch_to.active_element.send_keys("DWEB")
+                time.sleep(4)
+                driver.switch_to.active_element.send_keys(Keys.ENTER)
         # Preencher datas e valor
-        driver.find_element(By.ID, value="dataReferencia").send_keys(valorRefenrencia)
+                driver.find_element(By.ID, value="dataReferencia").send_keys(valorRefenrencia)
 
-        if ("Guia" in pathfile):
-            print("É Guia de pagamento - Cobrar ")
-            time.sleep(3)
-            driver.find_element(By.ID, value="dataVencimento").send_keys(dataVenc)
-            time.sleep(2)
-            valor = downloadfile.getValorPdf(pathfile)
-            driver.find_element(By.ID, value="valor").send_keys(valor)
-            time.sleep(2)
 
-            body = driver.find_element(By.CSS_SELECTOR, "body")
-            body.send_keys(Keys.PAGE_DOWN)
+                body = driver.find_element(By.CSS_SELECTOR, "body")
 
-            # anexar documento
-            time.sleep(3)
+                time.sleep(3)
+                #dataVenc =downloadfile.getValorPDF(arquivoAnexo,"Vencimento:", 1)
+                driver.find_element(By.ID, value="dataVencimento").send_keys(dataVenc)
+                time.sleep(2)
+                valor = downloadfile.getValorPdf(arquivoAnexo)
+                driver.find_element(By.ID, value="valor").send_keys(valor)
+                time.sleep(2)
+                #Rolar a pagina para baixo
+                body.send_keys(Keys.PAGE_DOWN)
 
-            upload = driver.find_element(By.ID, value="arquivo")
-            # upload.click()
-            upload.send_keys(os.path.abspath(pathfile))
+                # anexar documento
+                time.sleep(2)
+                upload = driver.find_element(By.ID, value="arquivo")
+                # upload.click()
+                upload.send_keys(os.path.abspath(arquivoAnexo))
+                time.sleep(2)
+                print("Guia Anexada - ok")
+                driver.find_element(By.XPATH, value="//button[contains(.,'Publicar')]").click()
 
-            time.sleep(3)
+                WebDriverWait(driver, 20).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, "#corpo > #avisosFixed > .acerto")))
+                mensagemSucesso = driver.find_element(By.CSS_SELECTOR, value="#corpo > #avisosFixed > .acerto").text
+                mensagemValidar = "Arquivo publicado com sucesso."
 
-        driver.find_element(By.XPATH,value="//button[contains(.,'Publicar')]").click()
-        time.sleep(7)
-        WebDriverWait(driver, 20).until(
-        EC.element_to_be_clickable((By.CSS_SELECTOR, "#corpo > #avisosFixed > .acerto")))
+                assert mensagemSucesso.__eq__(mensagemValidar)
+                time.sleep(5)
 
-        mensagemSucesso = driver.find_element(By.CSS_SELECTOR,value="#corpo > #avisosFixed > .acerto").text
-        mensagemValidar = "Arquivo publicado com sucesso."
+                print("Arquivo publicado", cnpji, indice+1)
+                listExecLog.append('{}{}{}{}{}\n'.format(cnpji, ",", "OK",",",fileAtual))
+                with open(logexecucao, "w") as logexec:
+                    logexec.writelines(listExecLog)
+                driver.refresh()
+                break
+            elif "Recibo" in fileAtual and "pdf" in fileAtual:
+                print("Recibo", fileAtual)
+                listExecLog.append('{}{}{}{}{}\n'.format(cnpji, ",", "RECEBIMENTO",",",fileAtual))
+                with open(logexecucao, "w") as logexec:
+                    logexec.writelines(listExecLog)
+            elif "zip" in fileAtual:
+                print("-------------------")
 
-        assert mensagemSucesso.__eq__(mensagemValidar)
-        time.sleep(5)
-
-        print("Arquivo publicado",cnpji)
-        listExecLog.append('{}{}{}\n'.format(cnpji, ",", "OK"))
-        with open(logexecucao, "w") as logexec:
-            logexec.writelines(listExecLog)
+            loop = loop + 1
         driver.refresh()
 
+
 except Exception as erro:
+    print(erro)
     print( cnpji, "erro")
-    listExecLog.append('{}{}{}\n'.format(cnpji, ",", "NOK"))
+    listExecLog.append('{}{}{}{}{}\n'.format(cnpji, ",", "NOK",",","Arquivo com eroo"))
     with open(logexecucao, "w") as logexec:
         logexec.writelines(listExecLog)
     driver.quit()
