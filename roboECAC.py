@@ -49,7 +49,6 @@ class EcacGuia:
       local = pyautogui.center(imageClick);
       pyautogui.click(local)
 
-
     def validarSemMovimenta(check,btnGuia,fechardown, cnpj, logexecucao):
         year = str(date.today().year)
         month = str(date.today().month - 1)

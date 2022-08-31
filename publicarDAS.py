@@ -137,7 +137,7 @@ try:
 
         time.sleep(3)
         driver.find_element(By.XPATH, value="//button[contains(.,'Publicar')]").click()
-        time.sleep(7)
+        time.sleep(5)
         WebDriverWait(driver, 20).until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "#corpo > #avisosFixed > .acerto")))
 

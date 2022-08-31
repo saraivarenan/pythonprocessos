@@ -68,7 +68,7 @@ try:
     dataVenc = "20"+mesAtual+year
     if(monthNumber <10):
         valorRefenrencia = "0"+monthreferencia+year
-        dataVenc = "20"+"0"+mesvencimento+ year
+        monthreferencia = "0"+monthreferencia
     else:
         dataVenc ="20"+mesAtual+year
     listExecLog.append('{}{}{}{}{}\n'.format("CNPJ", ",", "STATUS",",","ARQUIVO"))
@@ -81,7 +81,16 @@ try:
         while loop < len(lista_arqs):
             fileAtual = str(lista_arqs[loop])
             arquivoAnexo = pathfolder + "\\" + fileAtual
+
             if "Guia" in fileAtual and "pdf" in fileAtual:
+                dataVenc = downloadfile.getValorPDF(arquivoAnexo, "Vencimento", 5)
+                dataSplit = dataVenc.split('/')
+                mesVencPDF= dataSplit[1]
+                if mesVencPDF.__eq__(monthreferencia):
+                    listExecLog.append('{}{}{}{}{}\n'.format(cnpji, ",", "NOK", ",", "Mês referencia invalido"))
+                    with open(logexecucao, "w") as logexec:
+                        logexec.writelines(listExecLog)
+                    break
                 #pathfile = "".join(map(str, downloadfile.find_ext(pathfolder, "pdf")))
                 time.sleep(2)
                 selectEmpresa = WebDriverWait(driver, 20).until(
@@ -107,8 +116,9 @@ try:
                 body = driver.find_element(By.CSS_SELECTOR, "body")
 
                 time.sleep(3)
-                #dataVenc =downloadfile.getValorPDF(arquivoAnexo,"Vencimento:", 1)
+
                 driver.find_element(By.ID, value="dataVencimento").send_keys(dataVenc)
+
                 time.sleep(2)
                 valor = downloadfile.getValorPdf(arquivoAnexo)
                 driver.find_element(By.ID, value="valor").send_keys(valor)
@@ -137,8 +147,6 @@ try:
                 listExecLog.append('{}{}{}{}{}\n'.format(cnpji, ",", "OK",",",fileAtual))
                 with open(logexecucao, "w") as logexec:
                     logexec.writelines(listExecLog)
-                driver.refresh()
-                break
             elif "Recibo" in fileAtual and "pdf" in fileAtual:
                 print("Recibo", fileAtual)
                 listExecLog.append('{}{}{}{}{}\n'.format(cnpji, ",", "RECEBIMENTO",",",fileAtual))
@@ -154,7 +162,7 @@ try:
 except Exception as erro:
     print(erro)
     print( cnpji, "erro")
-    listExecLog.append('{}{}{}{}{}\n'.format(cnpji, ",", "NOK",",","Arquivo com eroo"))
+    listExecLog.append('{}{}{}{}{}\n'.format(cnpji, ",", "NOK",",","Arquivo com erro"))
     with open(logexecucao, "w") as logexec:
         logexec.writelines(listExecLog)
     driver.quit()

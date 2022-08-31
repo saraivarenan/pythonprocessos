@@ -18,6 +18,11 @@ class downloadfile:
         dir = os.path.join("C:\\","temp","python")
         if not os.path.exists(dir):
             os.mkdir(dir)
+    def tirarMascaraCnpj(cnpj):
+        cnpji = cnpj.replace(".", "")
+        cnpji = cnpji.replace("/", "")
+        cnpji = cnpji.replace("-", "")
+        return cnpji
     def moveFile(cnpj):
         day = str(date.today().day)
         year = str(date.today().year)
@@ -86,7 +91,6 @@ class downloadfile:
         parsed = ''.join(text)
         last = parsed.split()
         idvalor = last.index('Valor:')
-        print(last[idvalor + 2])
         return last[idvalor + 2]
 
     def retornarCnpj(file):
@@ -102,6 +106,7 @@ class downloadfile:
         parsed = ''.join(text)
         last = parsed.split()
         idvalor = last.index(valor)
+        #idvalor[]
         #idvalor = last.index('até')
         return last[idvalor + index]
 
